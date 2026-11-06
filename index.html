@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="国試対策">
+<title>救急救命士国家試験対策</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #F4F6FA; }
+  iframe { display: block; width: 100%; height: 100%; height: 100dvh; border: 0; }
+</style>
+</head>
+<body>
+<!--
+  入口のページ：アプリ本体をこのページの中で開き、ログイン情報をこのページ側に保存します。
+  iPhoneでは、Googleの枠の中に保存した情報がブラウザを閉じると消えるため、この形にしています。
+  ここにパスワードやトークンは書かれていません（各自の端末にだけ保存されます）。
+-->
+<iframe id="app" title="救急救命士国家試験対策"></iframe>
+<script>
+(function () {
+  var アプリ = 'https://script.google.com/macros/s/AKfycbzkxAY_Nsfdt-qof7-Wdis1sAxUcyaAV5mM8pbJkGjOW0h5Bl3FyRugPeaXR_ovIP3p/exec';
+  // このアプリの画面が動く場所。ここ以外とはやり取りしません
+  var 相手 = 'https://n-esolgabrnvblujynwffuxpvq6qivh3pxjfah4eq-0lu-script.googleusercontent.com';
+  var キー = 'kokushi_auth_v1';
+
+  function 読む() { try { return JSON.parse(localStorage.getItem(キー) || 'null'); } catch (e) { return null; } }
+
+  window.addEventListener('message', function (e) {
+    if (e.origin !== 相手 || !e.data || !e.data.kokushi) return;
+    if (e.data.kokushi === 'ready') {
+      e.source.postMessage({ kokushi: 'auth', auth: 読む() }, 相手);
+    } else if (e.data.kokushi === 'save' && e.data.auth) {
+      try { localStorage.setItem(キー, JSON.stringify(e.data.auth)); } catch (err) {}
+    } else if (e.data.kokushi === 'clear') {
+      try { localStorage.removeItem(キー); } catch (err) {}
+    }
+  });
+
+  // メールのリンクの指定（?exam=…、?mode=1by1）はそのまま渡す
+  document.getElementById('app').src = アプリ + location.search;
+})();
+</script>
+</body>
+</html>
