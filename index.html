@@ -27,7 +27,26 @@
 
   function 読む() { try { return JSON.parse(localStorage.getItem(キー) || 'null'); } catch (e) { return null; } }
 
+  // 確認用：URLの最後に ?debug=1 を付けると、保存とやり取りの状況を画面に出す（ログイン情報の中身は出さない）
+  var 確認 = /[?&]debug=1/.test(location.search), 欄 = null;
+  function 確認を書く(文) {
+    if (!確認) return;
+    if (!欄) {
+      欄 = document.createElement('div');
+      欄.style.cssText = 'position:fixed;left:0;right:0;bottom:0;max-height:45%;overflow:auto;background:#111;color:#fff;font:12px/1.5 monospace;padding:8px;z-index:9;white-space:pre-wrap;word-break:break-all';
+      document.body.appendChild(欄);
+    }
+    欄.textContent += new Date().toLocaleTimeString() + ' ' + 文 + '\n';
+  }
+  function 保存の状況() {
+    try { localStorage.setItem('kokushi_test', '1'); localStorage.removeItem('kokushi_test'); }
+    catch (e) { return '書き込み不可：' + e.name; }
+    return 読む() ? '保存あり' : '保存なし';
+  }
+  確認を書く('開いた時点：' + 保存の状況());
+
   window.addEventListener('message', function (e) {
+    if (e.data && e.data.kokushi) 確認を書く('受信：' + e.data.kokushi + ' / 相手一致=' + (e.origin === 相手) + ' / ' + e.origin);
     if (e.origin !== 相手 || !e.data || !e.data.kokushi) return;
     if (e.data.kokushi === 'ready') {
       e.source.postMessage({ kokushi: 'auth', auth: 読む() }, 相手);
@@ -36,10 +55,11 @@
     } else if (e.data.kokushi === 'clear') {
       try { localStorage.removeItem(キー); } catch (err) {}
     }
+    確認を書く('処理後：' + 保存の状況());
   });
 
   // メールのリンクの指定（?exam=…、?mode=1by1）はそのまま渡す
-  document.getElementById('app').src = アプリ + location.search;
+  document.getElementById('app').src = アプリ + location.search.replace(/[?&]debug=1/, '').replace(/^&/, '?');
 })();
 </script>
 </body>
